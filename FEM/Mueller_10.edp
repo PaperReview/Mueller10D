@@ -1,0 +1,35 @@
+real a=1.,b=1.,c;
+border GammaC1(t=0,2*pi) { x = -0.558223634633+0.1*cos(-t); y = 1.4417258418+0.1*sin(-t); };
+border GammaC2(t=0,2*pi) { x = 0.623499404931+0.1*cos(-t); y = 0.0280377585287+0.1*sin(-t); };
+
+border Gamma1(t=-0.5,2) { x = 1; y = t; };
+border Gamma2(t=-1,1.5) { x = -t; y = 2; };
+border Gamma3(t=-2,0.5) { x = -1.5; y = -t; };
+border Gamma4(t=-1.5,1) { x = t; y = -0.5; };
+
+int m=400;
+mesh Th=buildmesh(GammaC1(80)+GammaC2(80)+Gamma1(m)+Gamma2(m)+Gamma3(m)+Gamma4(m));
+plot(Th,wait=true,ps="membrane.eps");
+
+real beta = 1./10;
+func U=exp( -beta*(-200*exp(-(x-1)^2-10*y^2)-100*exp(-x^2-10*(y-0.5)^2)-170*exp(-6.5*(x+0.5)^2+11*(x+0.5)*(y-1.5)-6.5*(y-1.5)^2)+15*exp(0.7*(x+1)^2+0.6*(x+1)*(y-1)+0.7*(y-1)^2) +9*sin(2*5*pi*x)*sin(2*5*pi*y) ) );
+func g=0;
+func g2=1;
+
+fespace Vh(Th,P2);
+Vh phi,w;
+solve BVP(phi, w)=int2d(Th)((dx(phi)*dx(w)+dy(phi)*dy(w))*U)+on(GammaC1, phi=g)+on(GammaC2, phi=g2);
+
+ofstream ff("10.txt");
+real ll=-1.5,rr=1,bb=-0.5,tt=2.0;
+for(int i=0;i<250;i++)
+{
+    real yy = bb+i*0.01;
+    for (int j=0;j<250;j++)
+    {
+       real xx = ll+j*0.01;
+       ff<<phi(xx,yy)<<" ";
+    }
+    ff<<endl;
+}
+plot(phi,wait=true);
